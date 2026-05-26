@@ -13,3 +13,17 @@ Accept: application/json
 ### Health check
 GET http://127.0.0.1:8000/api/v1/health
 Accept: application/json
+
+
+
+###
+POST http://127.0.0.1:8000/api/v1/users
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "username": "admin",
+  "password": "123456"
+}
+
+###
