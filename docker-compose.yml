@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: magnum-go-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: magnum_go
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - magnum_go_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  magnum_go_postgres_data:
