@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from app.modules.users.repository import UserRepository
 from app.modules.users.schemas import UserCreate
 from app.modules.users.models import User
+from app.core.security import hash_password
 
 
 class UserService:
@@ -28,10 +29,13 @@ class UserService:
         user = await self.repository.create(
             email=data.email,
             username=data.username,
-            hashed_password=data.password,
+            hashed_password=hash_password(data.password),
         )
 
         return user
 
     async def list_users(self) -> list[User]:
         return await self.repository.list_users()
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        return await self.repository.get_by_email(email)

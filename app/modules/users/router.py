@@ -8,12 +8,13 @@ router = APIRouter()
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(data: UserCreate, service: UserService = Depends(get_user_service)):
-    return await service.create_user(data)
+    user = await service.create_user(data)
+    return UserResponse.model_validate(user)
 
 @router.get("", response_model=UserListResponse, status_code=status.HTTP_200_OK)
 async def list_users(service: UserService = Depends(get_user_service)):
     users = await service.list_users()
     return UserListResponse(
-        items=users,
+        items=[UserResponse.model_validate(user) for user in users],
         total=len(users)
     )
