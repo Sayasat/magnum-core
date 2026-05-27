@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from app.modules.catalog.models import Category, Product
 
@@ -94,6 +95,8 @@ class ProductRepository:
         *,
         search: str | None = None,
         category_id: UUID | None = None,
+        limit: int = 20,
+        offset: int = 0,
     ) -> list[Product]:
         stmt = select(Product)
 
@@ -110,10 +113,34 @@ class ProductRepository:
                 )
             )
 
-        stmt = stmt.order_by(Product.created_at.desc())
+        stmt = stmt.order_by(Product.created_at.desc()).limit(limit).offset(offset)
 
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
+
+    async def count_products(
+            self,
+            *,
+            search: str | None = None,
+            category_id: UUID | None = None,
+    ) -> int:
+        stmt = select(func.count(Product.id))
+
+        if category_id is not None:
+            stmt = stmt.where(Product.category_id == category_id)
+
+        if search:
+            search_pattern = f"%{search}%"
+            stmt = stmt.where(
+                or_(
+                    Product.name.ilike(search_pattern),
+                    Product.description.ilike(search_pattern),
+                    Product.sku.ilike(search_pattern),
+                )
+            )
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
 
     async def update(self, product: Product) -> Product:
         await self.session.flush()

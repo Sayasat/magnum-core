@@ -15,6 +15,7 @@ from app.modules.catalog.schemas import (
 )
 from app.modules.catalog.service import CategoryService, ProductService
 from app.modules.auth.dependencies import require_admin
+from app.shared.pagination import PaginationParams, build_pagination_meta
 
 router = APIRouter()
 
@@ -64,16 +65,23 @@ async def create_product(
 async def list_products(
     search: str | None = Query(default=None),
     category_id: UUID | None = Query(default=None),
+    pagination: PaginationParams = Depends(),
     service: ProductService = Depends(get_product_service),
 ):
-    products = await service.list_products(
+    products, total = await service.list_products(
         search=search,
         category_id=category_id,
+        limit=pagination.limit,
+        offset=pagination.offset,
     )
 
     return ProductListResponse(
         items=[ProductResponse.model_validate(product) for product in products],
-        total=len(products),
+        meta=build_pagination_meta(
+            page=pagination.page,
+            limit=pagination.limit,
+            total=total,
+        ),
     )
 
 

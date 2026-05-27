@@ -76,11 +76,16 @@ class OrderService:
 
         return created_order
 
-    async def list_user_orders(self, user_id: UUID) -> list[Order]:
-        return await self.order_repository.list_by_user_id(user_id)
+    async def list_user_orders(self, *, user_id: UUID, limit: int=20, offset: int=0,) -> tuple[list[Order],int]:
+        orders = await self.order_repository.list_by_user_id(
+            user_id=user_id, limit=limit,  offset=offset,)
+        total = await self.order_repository.count_by_user_id(user_id)
+        return orders, total
 
-    async def list_all_orders(self) -> list[Order]:
-        return await self.order_repository.list_all()
+    async def list_all_orders(self,*, limit: int = 20, offset: int = 0,) -> tuple[list[Order], int]:
+        orders = await self.order_repository.list_all(limit=limit, offset=offset,)
+        total = await self.order_repository.count_all()
+        return orders, total
 
     async def get_user_order(
         self,
@@ -123,5 +128,18 @@ class OrderService:
                 await self.product_repository.update(product)
 
         order.status = OrderStatus.CANCELLED
+
+        return await self.order_repository.update(order)
+
+    async def complete_order(self, order_id: UUID) -> Order:
+        order = await self.order_repository.get_by_id(order_id)
+
+        if not order:
+            raise NotFoundException("Order not found")
+
+        if order.status != OrderStatus.PAID:
+            raise BadRequestException("Only paid orders can be completed")
+
+        order.status = OrderStatus.COMPLETED
 
         return await self.order_repository.update(order)

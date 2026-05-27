@@ -78,11 +78,21 @@ class ProductService:
             stock_quantity=data.stock_quantity,
         )
 
-    async def list_products(self, *, search: str | None = None, category_id: UUID | None = None,) -> list[Product]:
-        return await self.product_repository.list_products(
+    async def list_products(self, *, search: str | None = None, category_id: UUID | None = None,
+                            limit: int = 20, offset: int = 0,) -> tuple[list[Product], int]:
+        products = await self.product_repository.list_products(
+            search=search,
+            category_id=category_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        total = await self.product_repository.count_products(
             search=search,
             category_id=category_id,
         )
+
+        return products, total
 
     async def get_product_by_id(self, product_id: UUID) -> Product:
         product = await self.product_repository.get_by_id(product_id)

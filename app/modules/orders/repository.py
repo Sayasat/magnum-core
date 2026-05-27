@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -66,22 +66,24 @@ class OrderRepository:
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def list_by_user_id(self, user_id: UUID) -> list[Order]:
+    async def list_by_user_id(self, *, user_id: UUID, limit: int = 20, offset: int = 0,) -> list[Order]:
         stmt = (
             select(Order)
             .where(Order.user_id == user_id)
             .options(selectinload(Order.items))
             .order_by(Order.created_at.desc())
+            .limit(limit).offset(offset)
         )
 
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def list_all(self) -> list[Order]:
+    async def list_all(self, *, limit: int = 20, offset: int = 0,) -> list[Order]:
         stmt = (
             select(Order)
             .options(selectinload(Order.items))
             .order_by(Order.created_at.desc())
+            .limit(limit).offset(offset)
         )
 
         result = await self.session.execute(stmt)
@@ -92,3 +94,15 @@ class OrderRepository:
         await self.session.refresh(order)
 
         return order
+
+    async def count_by_user_id(self, user_id: UUID) -> int:
+        stmt = select(func.count(Order.id)).where(Order.user_id == user_id)
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one()
+
+    async def count_all(self) -> int:
+        stmt = select(func.count(Order.id))
+
+        result = await self.session.execute(stmt)
+        return result.scalar_one()

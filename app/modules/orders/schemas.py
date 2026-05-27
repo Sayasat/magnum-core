@@ -5,6 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from app.modules.orders.enums import OrderStatus
+from app.shared.pagination import PaginationMeta
 
 
 class OrderItemResponse(BaseModel):
@@ -33,4 +34,4 @@ class OrderResponse(BaseModel):
 
 class OrderListResponse(BaseModel):
     items: list[OrderResponse]
-    total: int
+    meta: PaginationMeta

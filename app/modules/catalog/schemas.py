@@ -3,6 +3,7 @@ from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
+from app.shared.pagination import PaginationMeta
 
 
 class CategoryCreate(BaseModel):
@@ -29,7 +30,7 @@ class CategoryResponse(BaseModel):
 
 class CategoryListResponse(BaseModel):
     items: list[CategoryResponse]
-    total: int
+    meta: PaginationMeta
 
 
 class ProductCreate(BaseModel):
@@ -71,4 +72,4 @@ class ProductResponse(BaseModel):
 
 class ProductListResponse(BaseModel):
     items: list[ProductResponse]
-    total: int
+    meta: PaginationMeta
