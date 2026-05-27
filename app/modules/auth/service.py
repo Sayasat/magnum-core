@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from app.shared.exceptions import ForbiddenException, UnauthorizedException
 from app.core.security import create_access_token, verify_password
 from app.modules.auth.schemas import RegisterRequest, AuthResponse, TokenResponse, LoginRequest
 from app.modules.users.schemas import UserCreate, UserResponse
@@ -28,22 +28,13 @@ class AuthService:
         user = await self.user_service.get_user_by_email(data.email)
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password",
-            )
+            raise UnauthorizedException("Invalid email or password")
 
         if not verify_password(data.password, user.hashed_password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password",
-            )
+            raise UnauthorizedException("Invalid email or password")
 
         if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User is inactive",
-            )
+            raise ForbiddenException("User is inactive")
 
         token = self._create_token_for_user(user)
 

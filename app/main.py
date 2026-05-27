@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.exception_handlers import app_exception_handler
+from app.shared.exceptions import AppException
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -8,6 +10,7 @@ def create_app() -> FastAPI:
         debug=settings.DEBUG,
     )
 
+    app.add_exception_handler(AppException, app_exception_handler)
     app.include_router(api_router, prefix=settings.API_V1_PREFIX)
     return app
 

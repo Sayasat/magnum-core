@@ -46,3 +46,28 @@ Content-Type: application/json
 }
 
 ###
+GET http://127.0.0.1:8000/api/v1/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3Nzk4NTY3NDMsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.nvTGJSsFJcTbe4w8tY8Uw-Qdrd1uD_5XtTxYsDSLYMU
+
+###
+POST http://127.0.0.1:8000/api/v1/catalog/categories
+Content-Type: application/json
+
+{
+  "name": "Drinks",
+  "slug": "drinks"
+}
+
+###
+POST http://127.0.0.1:8000/api/v1/catalog/products
+Content-Type: application/json
+
+{
+  "category_id": "edb261a5-6ff4-483e-92de-233f4c246f1f",
+  "name": "Coca-Cola 1L",
+  "slug": "coca-cola-1l",
+  "description": "Classic Coca-Cola drink",
+  "price": 590,
+  "sku": "COLA-1L",
+  "stock_quantity": 100
+}

@@ -4,11 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db_session
 from app.modules.users.router import router as users_router
 from app.modules.auth.router import router as auth_router
+from app.modules.catalog.router import router as catalog_router
 
 api_router = APIRouter()
 
 api_router.include_router(users_router, prefix="/users", tags=["Users"])
 api_router.include_router(auth_router, prefix="/auth", tags=["Auth"])
+api_router.include_router(catalog_router, prefix="/catalog", tags=["Catalog"])
 
 @api_router.get("/health")
 async def health_check():
