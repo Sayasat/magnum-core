@@ -31,8 +31,8 @@ POST http://127.0.0.1:8000/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
-  "username": "john",
+  "email": "new_admin@example.com",
+  "username": "new_admin",
   "password": "123456"
 }
 
@@ -41,13 +41,13 @@ POST http://127.0.0.1:8000/api/v1/auth/login
 Content-Type: application/json
 
 {
-  "email": "john@example.com",
+  "email": "new_admin@example.com",
   "password": "123456"
 }
 
 ###
 GET http://127.0.0.1:8000/api/v1/users/me
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3Nzk4NTY3NDMsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.nvTGJSsFJcTbe4w8tY8Uw-Qdrd1uD_5XtTxYsDSLYMU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxOWQ1MDllMi1kYzA5LTRmNDgtYWViYy1kMmY2MmU3ZTY0ZmEiLCJleHAiOjE3Nzk4NTg5NzIsImVtYWlsIjoibmV3X2FkbWluQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIn0.grTZToOafF0j2iLIwv4eqI2vwlA54db-Iuxyu7IEDUw
 
 ###
 POST http://127.0.0.1:8000/api/v1/catalog/categories
@@ -60,14 +60,15 @@ Content-Type: application/json
 
 ###
 POST http://127.0.0.1:8000/api/v1/catalog/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxOWQ1MDllMi1kYzA5LTRmNDgtYWViYy1kMmY2MmU3ZTY0ZmEiLCJleHAiOjE3Nzk4NTg5NzIsImVtYWlsIjoibmV3X2FkbWluQGV4YW1wbGUuY29tIiwicm9sZSI6IkFETUlOIn0.grTZToOafF0j2iLIwv4eqI2vwlA54db-Iuxyu7IEDUw
 Content-Type: application/json
 
 {
   "category_id": "edb261a5-6ff4-483e-92de-233f4c246f1f",
-  "name": "Coca-Cola 1L",
-  "slug": "coca-cola-1l",
+  "name": "Coca-Cola 2L",
+  "slug": "coca-cola-2l",
   "description": "Classic Coca-Cola drink",
   "price": 590,
-  "sku": "COLA-1L",
+  "sku": "COLA-2L",
   "stock_quantity": 100
 }

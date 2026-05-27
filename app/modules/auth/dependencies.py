@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from app.shared.exceptions import ForbiddenException, UnauthorizedException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -9,6 +9,7 @@ from app.modules.auth.service import AuthService
 from app.modules.users.dependencies import get_user_service
 from app.modules.users.service import UserService
 from app.modules.users.models import User
+from app.modules.users.enums import UserRole
 
 
 def get_auth_service(
@@ -44,3 +45,8 @@ async def get_current_user(
         raise ForbiddenException("User is inactive")
 
     return user
+
+async def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.ADMIN:
+        raise ForbiddenException("Admin permissions required")
+    return current_user

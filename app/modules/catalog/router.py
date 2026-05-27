@@ -14,11 +14,13 @@ from app.modules.catalog.schemas import (
     ProductUpdate,
 )
 from app.modules.catalog.service import CategoryService, ProductService
+from app.modules.auth.dependencies import require_admin
 
 router = APIRouter()
 
 
-@router.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED,)
+@router.post("/categories", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(require_admin)],)
 async def create_category(
     data: CategoryCreate,
     service: CategoryService = Depends(get_category_service),
@@ -37,7 +39,8 @@ async def list_categories(service: CategoryService = Depends(get_category_servic
     )
 
 
-@router.patch("/categories/{category_id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK,)
+@router.patch("/categories/{category_id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK,
+              dependencies=[Depends(require_admin)],)
 async def update_category(
     category_id: UUID,
     data: CategoryUpdate,
@@ -47,7 +50,8 @@ async def update_category(
     return CategoryResponse.model_validate(category)
 
 
-@router.post("/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED,)
+@router.post("/products", response_model=ProductResponse, status_code=status.HTTP_201_CREATED,
+             dependencies=[Depends(require_admin)],)
 async def create_product(
     data: ProductCreate,
     service: ProductService = Depends(get_product_service),
@@ -82,7 +86,8 @@ async def get_product(
     return ProductResponse.model_validate(product)
 
 
-@router.patch("/products/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK,)
+@router.patch("/products/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK,
+              dependencies=[Depends(require_admin)],)
 async def update_product(
     product_id: UUID,
     data: ProductUpdate,
