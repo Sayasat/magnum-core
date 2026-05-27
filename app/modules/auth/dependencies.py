@@ -1,4 +1,8 @@
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.session import get_db_session
+from app.modules.users.repository import UserRepository
 from app.shared.exceptions import ForbiddenException, UnauthorizedException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -12,11 +16,17 @@ from app.modules.users.models import User
 from app.modules.users.enums import UserRole
 
 
-def get_auth_service(
-    user_service: UserService = Depends(get_user_service),
-) -> AuthService:
-    return AuthService(user_service=user_service)
 
+def get_auth_service(
+    session: AsyncSession = Depends(get_db_session),
+) -> AuthService:
+    user_repository = UserRepository(session)
+    user_service = UserService(user_repository)
+
+    return AuthService(
+        user_repository=user_repository,
+        user_service=user_service,
+    )
 bearer_scheme = HTTPBearer()
 
 async def get_current_user(

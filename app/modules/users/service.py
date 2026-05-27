@@ -32,8 +32,5 @@ class UserService:
     async def list_users(self) -> list[User]:
         return await self.repository.list_users()
 
-    async def get_user_by_email(self, email: str) -> User | None:
-        return await self.repository.get_by_email(email)
-
     async def get_user_by_id(self, user_id: UUID) -> User | None:
         return await self.repository.get_by_id(user_id)

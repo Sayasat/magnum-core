@@ -1,14 +1,18 @@
+from app.modules.users.repository import UserRepository
 from app.shared.exceptions import ForbiddenException, UnauthorizedException
 from app.core.security import create_access_token, verify_password
 from app.modules.auth.schemas import RegisterRequest, AuthResponse, TokenResponse, LoginRequest
 from app.modules.users.schemas import UserCreate, UserResponse
 from app.modules.users.service import UserService
 from app.modules.users.models import User
+from app.modules.users.repository import UserRepository
 
 
 class AuthService:
-    def __init__(self, user_service: UserService):
+    def __init__(self, user_service: UserService, user_repository: UserRepository):
         self.user_service = user_service
+        self.user_repository = user_repository
+
 
     async def register(self, data: RegisterRequest) -> AuthResponse:
         user = await self.user_service.create_user(
@@ -25,7 +29,7 @@ class AuthService:
         )
 
     async def login(self, data: LoginRequest) -> AuthResponse:
-        user = await self.user_service.get_user_by_email(data.email)
+        user = await self.user_repository.get_by_email(data.email)
 
         if not user:
             raise UnauthorizedException("Invalid email or password")
