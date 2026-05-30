@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.redis import redis_client
 from app.db.session import get_db_session
 from app.modules.users.router import router as users_router
 from app.modules.auth.router import router as auth_router
@@ -31,4 +32,12 @@ async def health_db_check(session: AsyncSession = Depends(get_db_session)):
     return {
         "status": "ok",
         "database": result.scalar_one(),
+    }
+
+@api_router.get("/health/redis")
+async def health_redis_check():
+    result = await redis_client.ping()
+    return {
+        "status": "ok",
+        "redis": result,
     }

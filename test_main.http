@@ -154,3 +154,7 @@ GET http://127.0.0.1:8000/api/v1/catalog/categories?page=1&limit=10
 ###
 GET http://127.0.0.1:8000/api/v1/catalog/products/239d5e1c-0be5-4f1c-a3ac-bfae1fe727bb
 
+###
+GET http://127.0.0.1:8000/api/v1/health/redis
+Accept: application/json
+
