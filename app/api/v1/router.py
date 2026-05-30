@@ -41,3 +41,8 @@ async def health_redis_check():
         "status": "ok",
         "redis": result,
     }
+
+@api_router.get("/sentry-debug-test")
+async def sentry_debug_test():
+    # Искусственно выбрасываем ошибку
+    1 / 0

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     DATABASE_URL: str = (
         "postgresql+asyncpg://postgres:postgres@localhost:5432/magnum_go"
     )
+    SENTRY_DSN: str = ""
+    SENTRY_ENVIRONMENT: str = "development"
 
     JWT_SECRET_KEY: str = "super-secret-local-key"
     JWT_ALGORITHM: str = "HS256"
