@@ -157,3 +157,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxOWQ1MDllM
 GET http://127.0.0.1:8000/api/v1/orders/admin?page=1&limit=10
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3Nzk4NzQ5MTcsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.bTSlGiqg4Ld6Xw7sGvUzpx5Y15VPefn4cAFwEIsEpxA
 
+
+###
+GET http://127.0.0.1:8000/api/v1/catalog/products?page=1&limit=10
