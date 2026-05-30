@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int =  6379
     CACHE_TTL_PRODUCTS: int = 60
     CACHE_TTL_CATEGORIES: int = 60
+    CHECKOUT_LOCK_TTL_SECONDS: int = 30
 
     model_config = SettingsConfigDict(
         env_file=".env",

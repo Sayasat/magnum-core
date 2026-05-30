@@ -61,6 +61,7 @@ class OrderRepository:
             select(Order)
             .where(Order.id == order_id)
             .options(selectinload(Order.items))
+            .execution_options(populate_existing=True)
         )
 
         result = await self.session.execute(stmt)

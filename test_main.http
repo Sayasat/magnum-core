@@ -48,7 +48,7 @@ Content-Type: application/json
 
 ###
 GET http://127.0.0.1:8000/api/v1/users/me
-Authorization: Bearer <CUSTOMER_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3ODAxMzA5NTcsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.wrIw4PnHB70WZe7xDjlrzxc3XWZRJYmnB5bdJfHtHYI
 ###
 POST http://127.0.0.1:8000/api/v1/catalog/categories
 Authorization: Bearer <ADMIN_TOKEN>
@@ -76,12 +76,12 @@ Content-Type: application/json
 
 ###
 GET http://127.0.0.1:8000/api/v1/cart
-Authorization: Bearer <CUSTOMER_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3ODAxMzA5NTcsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.wrIw4PnHB70WZe7xDjlrzxc3XWZRJYmnB5bdJfHtHYI
 
 
 ###
 POST http://127.0.0.1:8000/api/v1/cart/items
-Authorization: Bearer <CUSTOMER_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3ODAxMzA5NTcsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.wrIw4PnHB70WZe7xDjlrzxc3XWZRJYmnB5bdJfHtHYI
 Content-Type: application/json
 
 {
@@ -107,7 +107,7 @@ Authorization: Bearer <CUSTOMER_TOKEN>
 
 ###
 POST http://127.0.0.1:8000/api/v1/orders/checkout
-Authorization: Bearer <CUSTOMER_TOKEN>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODY5YTJmYi1hMzBjLTRjNTItODhjMy04OTI2YjM1MmQ1ZmUiLCJleHAiOjE3ODAxMzA5NTcsImVtYWlsIjoiam9obkBleGFtcGxlLmNvbSIsInJvbGUiOiJDVVNUT01FUiJ9.wrIw4PnHB70WZe7xDjlrzxc3XWZRJYmnB5bdJfHtHYI
 
 ###
 GET http://127.0.0.1:8000/api/v1/orders
@@ -157,4 +157,7 @@ GET http://127.0.0.1:8000/api/v1/catalog/products/239d5e1c-0be5-4f1c-a3ac-bfae1f
 ###
 GET http://127.0.0.1:8000/api/v1/health/redis
 Accept: application/json
+
+
+6869a2fb-a30c-4c52-88c3-8926b352d5fe
 

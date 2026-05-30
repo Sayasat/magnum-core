@@ -1,12 +1,14 @@
 from decimal import Decimal
 from uuid import UUID
 
+from app.core.config import settings
+from app.core.redis import redis_client
 from app.modules.cart.repository import CartRepository
 from app.modules.catalog.repository import ProductRepository
 from app.modules.orders.enums import OrderStatus
 from app.modules.orders.models import Order
 from app.modules.orders.repository import OrderRepository
-from app.shared.exceptions import BadRequestException, ForbiddenException, NotFoundException
+from app.shared.exceptions import BadRequestException, ForbiddenException, NotFoundException, ConflictException
 
 
 class OrderService:
@@ -20,7 +22,25 @@ class OrderService:
         self.cart_repository = cart_repository
         self.product_repository = product_repository
 
-    async def checkout(self, user_id: UUID) -> Order:
+    @staticmethod
+    def _build_checkout_lock_key(user_id: UUID) -> str:
+        return f"orders:checkout:lock:{user_id}"
+
+    async def checkout(self,user_id: UUID) -> Order:
+        lock_key = self._build_checkout_lock_key(user_id)
+        lock_acquired = await redis_client.set(
+            lock_key, "1", ex=settings.CHECKOUT_LOCK_TTL_SECONDS, nx=True,
+        )
+        if not lock_acquired:
+            raise ConflictException("Checkout is already in progress")
+
+        try:
+            return await self._checkout(user_id)
+        finally:
+            await redis_client.delete(lock_key)
+
+
+    async def _checkout(self, user_id: UUID) -> Order:
         cart = await self.cart_repository.get_by_user_id(user_id)
 
         if not cart or not cart.items:
