@@ -33,11 +33,7 @@ async def create_category(
 @router.get("/categories", response_model=CategoryListResponse, status_code=status.HTTP_200_OK,)
 async def list_categories(service: CategoryService = Depends(get_category_service),):
     categories = await service.list_categories()
-
-    return CategoryListResponse(
-        items=[CategoryResponse.model_validate(category) for category in categories],
-        total=len(categories),
-    )
+    return CategoryListResponse(items=categories,total=len(categories),)
 
 
 @router.patch("/categories/{category_id}", response_model=CategoryResponse, status_code=status.HTTP_200_OK,
@@ -76,7 +72,7 @@ async def list_products(
     )
 
     return ProductListResponse(
-        items=[ProductResponse.model_validate(product) for product in products],
+        items=products,
         meta=build_pagination_meta(
             page=pagination.page,
             limit=pagination.limit,
@@ -90,8 +86,7 @@ async def get_product(
     product_id: UUID,
     service: ProductService = Depends(get_product_service),
 ):
-    product = await service.get_product_by_id(product_id)
-    return ProductResponse.model_validate(product)
+    return await service.get_product_by_id(product_id)
 
 
 @router.patch("/products/{product_id}", response_model=ProductResponse, status_code=status.HTTP_200_OK,

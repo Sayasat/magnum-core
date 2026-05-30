@@ -103,6 +103,10 @@ class ProductService:
             for key, value in response.model_dump().items()
         }
 
+    @staticmethod
+    def _build_product_detail_cache_key(product_id: UUID) -> str:
+        return f"catalog:products:detail:{product_id}"
+
     async def create_product(self, data: ProductCreate) -> Product:
         category = await self.category_repository.get_by_id(data.category_id)
         if not category:
@@ -126,6 +130,7 @@ class ProductService:
         )
         await self.clear_products_cache()
         return product
+
 
     async def list_products(self, *, search: str | None = None, category_id: UUID | None = None,
                             limit: int = 20, offset: int = 0,) -> tuple[list[ProductResponse], Any] | tuple[
@@ -154,16 +159,39 @@ class ProductService:
             "total": total,
         }
         await redis_client.set(cache_key, json.dumps(cache_value), ex=60)
-        return products, total
+        return [ProductResponse.model_validate(product) for product in products], total
 
-    async def get_product_by_id(self, product_id: UUID) -> Product:
+
+    async def get_product_by_id(self, product_id: UUID) -> ProductResponse:
+        cache_key = self._build_product_detail_cache_key(product_id)
+        cached = await redis_client.get(cache_key)
+        if cached:
+            data = json.loads(cached)
+            return ProductResponse.model_validate(data)
+
         product = await self.product_repository.get_by_id(product_id)
         if not product:
             raise NotFoundException("Product not found")
+        response = ProductResponse.model_validate(product)
+        await redis_client.set(
+            cache_key,
+            json.dumps(self._serialize_response(response)),
+            ex=settings.CACHE_TTL_PRODUCTS,
+        )
+        return response
+
+
+    async def _get_product_model_by_id(self, product_id: UUID) -> Product:
+        product = await self.product_repository.get_by_id(product_id)
+
+        if not product:
+            raise NotFoundException("Product not found")
+
         return product
 
+
     async def update_product(self, product_id: UUID, data: ProductUpdate,) -> Product | None:
-        product = await self.get_product_by_id(product_id)
+        product = await self._get_product_model_by_id(product_id)
         update_data = data.model_dump(exclude_unset=True)
 
         if "category_id" in update_data:
