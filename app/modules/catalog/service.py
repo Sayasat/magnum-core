@@ -3,32 +3,57 @@ from uuid import UUID
 from decimal import Decimal
 from datetime import datetime
 import json
-from app.core.redis import redis_client
 
+from app.core.config import settings
+from app.core.redis import redis_client
 from app.shared.exceptions import NotFoundException, ConflictException
 from app.modules.catalog.models import Category, Product
 from app.modules.catalog.repository import CategoryRepository, ProductRepository
 
-from app.modules.catalog.schemas import CategoryCreate, CategoryUpdate, ProductUpdate, ProductCreate, ProductResponse
+from app.modules.catalog.schemas import CategoryCreate, CategoryUpdate, ProductUpdate, ProductCreate, ProductResponse, \
+    CategoryResponse
 
 
 class CategoryService:
     def __init__(self, category_repository: CategoryRepository):
         self.category_repository = category_repository
 
+    @staticmethod
+    async def clear_categories_cache() -> None:
+        keys = await redis_client.keys("catalog:categories:*")
+        if keys:
+            await redis_client.delete(*keys)
+
+    @staticmethod
+    def _serialize_response(response) -> dict[str, Any]:
+        return {
+            key: str(value) if isinstance(value, (UUID, Decimal, datetime)) else value
+            for key, value in response.model_dump().items()
+        }
+
     async def create_category(self, data: CategoryCreate) -> Category:
         existing = await self.category_repository.get_by_slug(data.slug)
-
         if existing:
             raise ConflictException("Category with this slug already exists")
+        category_create = await self.category_repository.create(name=data.name,slug=data.slug,)
+        await self.clear_categories_cache()
+        return category_create
 
-        return await self.category_repository.create(
-            name=data.name,
-            slug=data.slug,
-        )
+    async def list_categories(self) -> list[CategoryResponse]:
+        cache_key = "catalog:categories:list"
+        cached = await redis_client.get(cache_key)
+        if cached:
+            data = json.loads(cached)
+            return [CategoryResponse.model_validate(item) for item in data]
 
-    async def list_categories(self) -> list[Category]:
-        return await self.category_repository.list_categories()
+        categories = await self.category_repository.list_categories()
+
+        cache_value = [
+            self._serialize_response(CategoryResponse.model_validate(category)) for category in categories
+        ]
+
+        await redis_client.set(cache_key, json.dumps(cache_value), ex=settings.CACHE_TTL_CATEGORIES,)
+        return [CategoryResponse.model_validate(category) for category in categories]
 
     async def get_category_by_id(self, category_id: UUID) -> Category:
         category = await self.category_repository.get_by_id(category_id)
@@ -50,28 +75,33 @@ class CategoryService:
         for field, value in update_data.items():
             setattr(category, field, value)
 
-        return await self.category_repository.update(category)
+        category = await self.category_repository.update(category)
+        await self.clear_categories_cache()
+        return category
 
-CACHE_TTL = 60
+
 class ProductService:
     def __init__(self, product_repository: ProductRepository, category_repository: CategoryRepository):
         self.product_repository = product_repository
         self.category_repository = category_repository
 
     @staticmethod
-    async def clear_products_cache_by_category(category_id: UUID | None = None):
-        """
-        Очистка кеша для всех продуктов.
-        Если передан category_id, удаляем только ключи с этой категорией.
-        """
-        if category_id:
-            pattern = f"products:{category_id}:*"
-        else:
-            pattern = "products:*"
-
-        keys = await redis_client.keys(pattern)
+    async def clear_products_cache() -> None:
+        keys = await redis_client.keys("catalog:products:*")
         if keys:
             await redis_client.delete(*keys)
+
+    @staticmethod
+    def _build_products_list_cache_key(*, search: str | None, category_id: UUID | None,
+                                       limit: int, offset: int,) -> str:
+        return f"catalog:products:list:search={search}:category={category_id}:limit={limit}:offset={offset}"
+
+    @staticmethod
+    def _serialize_response(response) -> dict[str, Any]:
+        return {
+            key: str(value) if isinstance(value, (UUID, Decimal, datetime)) else value
+            for key, value in response.model_dump().items()
+        }
 
     async def create_product(self, data: ProductCreate) -> Product:
         category = await self.category_repository.get_by_id(data.category_id)
@@ -83,9 +113,9 @@ class ProductService:
         existing_sku = await self.product_repository.get_by_sku(data.sku)
         if existing_sku:
             raise ConflictException("Product with this SKU already exists")
-        await self.clear_products_cache_by_category(data.category_id)
+        await self.clear_products_cache()
 
-        return await self.product_repository.create(
+        product = await self.product_repository.create(
             category_id=data.category_id,
             name=data.name,
             slug=data.slug,
@@ -94,17 +124,20 @@ class ProductService:
             sku=data.sku,
             stock_quantity=data.stock_quantity,
         )
+        await self.clear_products_cache()
+        return product
 
     async def list_products(self, *, search: str | None = None, category_id: UUID | None = None,
                             limit: int = 20, offset: int = 0,) -> tuple[list[ProductResponse], Any] | tuple[
         list[Product], int]:
-        cache_key = f"products:{search}:{category_id}:{limit}:{offset}"
+        cache_key = self._build_products_list_cache_key(
+            search=search, category_id=category_id, limit=limit, offset=offset,
+        )
         cached = await redis_client.get(cache_key)
         if cached:
             data = json.loads(cached)
             products = [ProductResponse.model_validate(item) for item in data["items"]]
-            total = data["total"]
-            return products, total
+            return products, data["total"]
         # Получаем данные из базы
         products = await self.product_repository.list_products(
             search=search, category_id=category_id, limit=limit,offset=offset,
@@ -115,15 +148,12 @@ class ProductService:
         # Сериализация UUID и Decimal перед json.dumps
         cache_value = {
             "items": [
-                {
-                    k: str(v) if isinstance(v, (UUID, Decimal, datetime)) else v
-                    for k, v in ProductResponse.model_validate(p).model_dump().items()
-                }
-                for p in products
+                self._serialize_response(ProductResponse.model_validate(product))
+                for product in products
             ],
             "total": total,
         }
-        await redis_client.set(cache_key, json.dumps(cache_value), ex=CACHE_TTL)
+        await redis_client.set(cache_key, json.dumps(cache_value), ex=60)
         return products, total
 
     async def get_product_by_id(self, product_id: UUID) -> Product:
@@ -154,10 +184,8 @@ class ProductService:
         for field, value in update_data.items():
             setattr(product, field, value)
 
-        await self.clear_products_cache_by_category(data.category_id)
+        await self.clear_products_cache()
         return await self.product_repository.update(product)
-
-
 
 
 

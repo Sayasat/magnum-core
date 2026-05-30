@@ -11,8 +11,8 @@ async def test_register_user(client: AsyncClient):
         "password": "123456",
     }
 
-    response = await client.post("api/v1/auth/register", json=payload)
-    assert response.status_code == 200
+    response = await client.post("/api/v1/auth/register", json=payload)
+    assert response.status_code == 201
     data = response.json()
     assert data["user"]["email"] == payload["email"]
     assert data["user"]["username"] == payload["username"]
@@ -32,7 +32,7 @@ async def test_login_user(client: AsyncClient):
 
     register_response = await client.post("/api/v1/auth/register", json=payload)
 
-    assert register_response.status_code == 200
+    assert register_response.status_code == 201
 
     login_response = await client.post(
         "/api/v1/auth/login",
@@ -62,7 +62,7 @@ async def test_login_with_wrong_password_returns_unauthorized(client: AsyncClien
 
     register_response = await client.post("/api/v1/auth/register", json=payload)
 
-    assert register_response.status_code == 200
+    assert register_response.status_code == 201
 
     login_response = await client.post(
         "/api/v1/auth/login",

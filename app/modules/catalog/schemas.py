@@ -30,7 +30,7 @@ class CategoryResponse(BaseModel):
 
 class CategoryListResponse(BaseModel):
     items: list[CategoryResponse]
-    meta: PaginationMeta
+    total: int
 
 
 class ProductCreate(BaseModel):
