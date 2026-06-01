@@ -9,6 +9,7 @@ from app.modules.orders.enums import OrderStatus
 from app.modules.orders.models import Order
 from app.modules.orders.repository import OrderRepository
 from app.shared.exceptions import BadRequestException, ForbiddenException, NotFoundException, ConflictException
+from app.modules.orders.tasks import send_order_notification
 
 
 class OrderService:
@@ -93,6 +94,7 @@ class OrderService:
 
         if not created_order:
             raise NotFoundException("Order not found")
+        send_order_notification.delay(str(order.id))
 
         return created_order
 

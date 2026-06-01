@@ -27,6 +27,12 @@ class Settings(BaseSettings):
     CACHE_TTL_CATEGORIES: int = 60
     CHECKOUT_LOCK_TTL_SECONDS: int = 30
 
+    # RabbitMQ
+    RABBITMQ_HOST: str = "rabbitmq"
+    RABBITMQ_PORT: int = 5672
+    RABBITMQ_USER: str = "guest"
+    RABBITMQ_PASSWORD: str = "guest"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

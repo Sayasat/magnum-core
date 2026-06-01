@@ -17,5 +17,29 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: magnum-go-rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672" # management panel
+
+  celery_worker:
+    image: python:3.13
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && celery -A app.core.celery.celery_app worker --loglevel=info"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/magnum_go
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
 volumes:
   magnum_go_postgres_data:
